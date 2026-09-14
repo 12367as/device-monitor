@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Device Monitoring Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1a1a2e; color: #fff; margin: 0; padding: 20px; }
+        .container { max-width: 1100px; margin: auto; }
+        h1 { text-align: center; color: #00fff0; text-transform: uppercase; letter-spacing: 2px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .card { background: #16213e; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border-bottom: 4px solid #0f3460; }
+        .card h3 { margin: 0 0 10px 0; color: #e94560; }
+        .card .number { font-size: 2.5rem; font-weight: bold; color: #00fff0; }
+        table { width: 100%; border-collapse: collapse; background: #16213e; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3); margin-bottom: 40px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #0f3460; }
+        th { background-color: #0f3460; color: #00fff0; text-transform: uppercase; font-size: 0.9rem; }
+        tr:hover { background-color: #1f4068; }
+        .badge { padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; }
+        .online { background-color: #28a745; color: white; }
+        .offline { background-color: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Network Device Monitoring System</h1>
+        
+        <div class="grid">
+            <div class="card">
+                <h3>Total Network Devices</h3>
+                <div class="number" id="total-devices">0</div>
+            </div>
+            <div class="card">
+                <h3>Devices Online</h3>
+                <div class="number" id="online-devices" style="color: #28a745;">0</div>
+            </div>
+            <div class="card">
+                <h3>Devices Offline</h3>
+                <div class="number" id="offline-devices" style="color: #dc3545;">0</div>
+            </div>
+        </div>
+
+        <h2>📡 Live Network Infrastructure Grid</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Device ID</th>
+                    <th>Device Name</th>
+                    <th>IP Address</th>
+                    <th>Current Status</th>
+                </tr>
+            </thead>
+            <tbody id="device-table-body">
+                <!-- Data loaded automatically -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function fetchLiveNetworkUpdates() {
+            try {
+                let response = await fetch('/api/v1/devices');
+                let devices = await response.json();
+                
+                let tableBody = document.getElementById('device-table-body');
+                tableBody.innerHTML = ''; 
+                
+                let total = devices.length;
+                let online = 0;
+                let offline = 0;
+
+                devices.forEach(device => {
+                    let isOnline = device.status === 'Online';
+                    if (isOnline) online++; else offline++;
+
+                    let badgeClass = isOnline ? 'online' : 'offline';
+                    let statusDot = isOnline ? '🟢 Online' : '🔴 Offline';
+
+                    let row = `<tr>
+                        <td><strong>#${device.device_id}</strong></td>
+                        <td>${device.device_name}</td>
+                        <td><code>${device.ip_address}</code></td>
+                        <td><span class="badge ${badgeClass}">${statusDot}</span></td>
+                    </tr>`;
+                    tableBody.innerHTML += row;
+                });
+
+                document.getElementById('total-devices').innerText = total;
+                document.getElementById('online-devices').innerText = online;
+                document.getElementById('offline-devices').innerText = offline;
+
+            } catch (error) {
+                console.error("Link warning:", error);
+            }
+        }
+
+        fetchLiveNetworkUpdates();
+        setInterval(fetchLiveNetworkUpdates, 3000); // Har 3 second mein auto-update hoga
+    </script>
+</body>
+</html>
